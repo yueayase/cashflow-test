@@ -67,7 +67,7 @@ export abstract class Base<T> implements IBase<T> {
     }
 
   public update = async (id: any, data: Partial<Omit<T, 'id'>>, trx?: Knex.Transaction) => {
-        let sqlBuilder = this.knexSql(this.tableName).update(this.DBObject2DBdata(data)).where(id);
+        let sqlBuilder = this.knexSql(this.tableName).update(this.DBObject2DBdata(data)).where({id});
 
         if(trx) sqlBuilder = sqlBuilder.transacting(trx);
 

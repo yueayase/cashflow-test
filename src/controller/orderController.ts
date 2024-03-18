@@ -18,7 +18,7 @@ export interface IOrderController {
     createOrder(
         req: Request<any, any, createOrderRequestParams, any>, res: Response, _next: NextFunction
     ): void;
-    updateAmount(req: Request<any, any, any, any>, res: Response, _next: NextFunction): void;
+    updateOrder(req: Request<any, any, any, any>, res: Response, _next: NextFunction): void;
 }
 
 export class OrderController implements IOrderController {
@@ -183,7 +183,56 @@ export class OrderController implements IOrderController {
 
     }
 
-    public updateAmount: IOrderController["updateAmount"] = (_req, _res, _next) => {
+    public updateOrder: IOrderController["updateOrder"] = async (req, res, _next) => {
         // TODO:
+        console.log("🚀 ~file: OrderController.ts ~ OrderController line 188 ~ req: ", 
+            req.body);
+
+            let merchantTradeNo = "";
+            let tradeDate = "";
+
+            if ("RtnCode" in req.body && "MerchantTradeNo" in req.body) {
+                const { MerchantTradeNo, RtnCode, TradeDate } = req.body;
+                if (RtnCode !== "1") res.status(500).send("0|Failed");
+
+                merchantTradeNo = MerchantTradeNo;
+                tradeDate = TradeDate;
+            }
+
+            try {
+                // 從 order 中找出我們的訂單
+                const order = await this.orderModel.findOne(merchantTradeNo);
+                if (isEmpty(order)) res.status(500).send("0|Failed");
+
+                if (order?.status !== OrderStatus.WAITING) 
+                    res.status(500).send("0|Failed");
+
+                // 更新 product 減少的商品
+                const results = await Promise.all(
+                    order!.contents.map(
+                        async (product) => 
+                            await this.productModel.updateAmount(
+                                {
+                                    id: product.productId,
+                                    ...pick(product, ["price", "amount"])
+                                }
+                            )
+                    )
+                );
+
+                if (results.some(result => !result)) return res.status(500).send("0|Failed");
+
+                // 更新 order 狀態
+                await this.orderModel.update(merchantTradeNo, {
+                    status: OrderStatus.SUCCESS,
+                    updatedAt: new Date(tradeDate)
+                });
+
+                res.status(200).send("1|OK");
+            }
+            catch (err: any) {
+                console.error(err);
+                res.status(500).send("0|Failed");
+            }
     }
 }

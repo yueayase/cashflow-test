@@ -87,7 +87,7 @@ export class ECpayAdapter implements IECpayAdapter {
             client_redirect_url
         );
 
-        console.log(html);
+        //console.log(html);
 
         return html;
     }

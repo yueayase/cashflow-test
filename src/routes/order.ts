@@ -7,10 +7,14 @@ export const mountOrderRouter = ({
     let router = express.Router();
 
     router.post("/create",
-    // middleware 中介層
-    controllerCtx.orderController.createOrderValidator(),
-    // controller create order 正式的內容
-    controllerCtx.orderController.createOrder);
+        // middleware 中介層
+        controllerCtx.orderController.createOrderValidator(),
+        // controller create order 正式的內容
+        controllerCtx.orderController.createOrder);
+
+    router.post("/update",
+        controllerCtx.orderController.updateOrder
+    );
 
     return router;
 }

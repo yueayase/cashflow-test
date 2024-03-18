@@ -124,7 +124,7 @@ const app = Vue.createApp({
             this.$nextTick(() => {
                 document.getElementById("_form_aiochk").submit();
             });
-            console.log("~file index.js line 123~ ", this.ecpayHtml);
+            //console.log("~file index.js line 123~ ", this.ecpayHtml);
         }
     }
 });
