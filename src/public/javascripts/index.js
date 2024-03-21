@@ -76,7 +76,37 @@ const app = Vue.createApp({
         this.products = await fetch(`${serverDomain}/products/list`).then((res) => 
             res.json()
         );
-        console.log(" ~file index.js line 78~ mounted ~this.products", this.products);
+
+        paypal.Buttons({
+            // 使用 arrow function => 才可以得到global scope 的函數
+            createOrder: async () => {
+                // 串接我們自己的 server code
+                const items = this.getItemDetailByBuyItems();
+
+                const result = await this.sendPayment(
+                    `${this.serverDomain}/orders/create`, 
+                    {
+                        paymentProvider: "PAYPAL",
+                        paymentWay: "PAYPAL",
+                        contents: items
+                    }
+                );
+
+                console.log("🚀 ~ file index.js ~line 95 mounted ~ result:", result);
+                console.log("🚀 ~ file index.js ~line 95 mounted ~ result2:", typeof result);
+                console.log("🚀 ~ file index.js ~line 95 mounted ~ result3:", typeof result.data);
+                return result.data;
+            },
+            onApprove: (data, actions) => {
+                console.log("🚀 ~ file index.js ~line 101 mounted ~ data:", data);
+                return actions.order.capture();
+            },
+            onError: (err) => {
+                console.log("🚀 ~ file index.js ~line 105 mounted ~ err:", err);
+            }
+          }).render('#paypal-area');
+        
+        console.log(" ~file index.js line 109~ mounted ~this.products", this.products);
     },
     methods: {
         getItemDetailByBuyItems() {
@@ -102,7 +132,7 @@ const app = Vue.createApp({
                 return result;
             }
             catch(e) {
-                console.log("~file index.js line 104~ sendPayment ~e", e);
+                console.log("~file index.js line 135~ sendPayment ~e", e);
                 throw new Error(e);
             }
         },

@@ -148,10 +148,15 @@ export class OrderController implements IOrderController {
                 const products = await this.productModel.findByIds(
                     contents.map(product => product.productId));
 
-                const contentInfos = contents.map(content => ({
-                    name: (products?.find(p => p.id === content.productId))?.name || "", 
-                    price: content.price
-                }));
+                const contentInfos = contents.map(content => {
+                    const product = products?.find(p => p.id === content.productId);
+                    return {
+                        name: product?.name || "", 
+                        price: content.price,
+                        amount: content.amount,
+                        desc: product?.description || ""
+                    };
+                });
                 // 金流串接
                 const result = await paymentDispatcher({
                     paymentProvider,
@@ -192,11 +197,21 @@ export class OrderController implements IOrderController {
             let tradeDate = "";
 
             if ("RtnCode" in req.body && "MerchantTradeNo" in req.body) {
+                // ECPay
                 const { MerchantTradeNo, RtnCode, TradeDate } = req.body;
                 if (RtnCode !== "1") res.status(500).send("0|Failed");
 
                 merchantTradeNo = MerchantTradeNo;
                 tradeDate = TradeDate;
+            }
+            else if ("resource" in req.body) {
+                // Paypal
+                const { custom_id, status, update_time } = req.body.resource;
+
+                if (status !== "COMPLETED") return res.status(500).send(500);
+
+                merchantTradeNo = custom_id;
+                tradeDate = update_time;
             }
 
             try {

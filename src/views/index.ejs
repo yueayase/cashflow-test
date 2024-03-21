@@ -32,11 +32,13 @@
 
       <div>
         <button @click="ECPAY">綠界支付</button>
+        <div id="paypal-area"></div>
       </div>
       <div v-html="ecpayHtml"></div>
     </div>
   </body>
 
+  <script src="https://www.paypal.com/sdk/js?client-id=<%= paypal_client_id %>"></script>
   <script src="
     https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.min.js
   "></script>

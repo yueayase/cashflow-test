@@ -7,6 +7,7 @@
     "build": "sh etc/build.sh"
   },
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "@types/lodash": "^4.17.0",
     "cookie-parser": "~1.4.4",
     "dayjs": "^1.11.10",

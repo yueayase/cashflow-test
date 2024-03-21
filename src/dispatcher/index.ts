@@ -1,10 +1,13 @@
 import { ECpayAdapter } from "@/adapter/ecpay";
+import { PaypalAdapter } from "@/adapter/paypal";
 import { PaymentProvider, PaymentWay } from "@/model/order"
 import dayjs from "dayjs";
 
-export interface OrderDetail {
+interface OrderDetail {
     name: string;
     price: number;
+    amount: number;
+    desc: string;
 }
 
 export interface PaymentPayload {
@@ -43,5 +46,14 @@ export const paymentDispatcher = async ({
     }
     else if (paymentProvider === PaymentProvider.PAYPAL) {
         // TODO:
+        const paypal = new PaypalAdapter();
+        const id = await paypal.createOrder({
+            billId: payload.billId,
+            totalPrice: payload.totalPrice,
+            details: payload.details
+        });
+
+
+        return id;
     }
 }
